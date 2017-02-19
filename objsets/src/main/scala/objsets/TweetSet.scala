@@ -61,7 +61,7 @@ abstract class TweetSet {
    * Question: Should we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-    def union(that: TweetSet): TweetSet = ???
+    def union(that: TweetSet): TweetSet
   
   /**
    * Returns the tweet from this set which has the greatest retweet count.
@@ -72,7 +72,7 @@ abstract class TweetSet {
    * Question: Should we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-    def mostRetweeted: Tweet = ???
+    def mostRetweeted: Tweet
   
   /**
    * Returns a list containing all tweets of this set, sorted by retweet count
@@ -117,7 +117,11 @@ class Empty extends TweetSet {
   override def toString: String = "_"
 
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = acc
-  
+
+  def union(that: TweetSet): TweetSet = that
+
+  def mostRetweeted: Tweet = throw new NoSuchElementException
+
   /**
    * The following methods are already implemented
    */
@@ -138,11 +142,23 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
 
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = {
     // new Empty on left because accumulator comes from right
+    // Otherwise, passes tests but uses the fact that tests are built on a set conversion to count the number of elements
+    // because elements would be duplicated, this is a proper filter
     if (p(elem)) new NonEmpty(elem, left.filterAcc(p, new Empty()), right.filterAcc(p, acc))
     else left.filterAcc(p, right.filterAcc(p, acc))
   }
-  
-    
+
+  def union(that: TweetSet): TweetSet = left.union(right.union(that.incl(elem)))
+
+  def mostRetweeted: Tweet = {
+    def maxRetweets(tweet1: Tweet,tweet2: Tweet) = if (tweet1.retweets > tweet2.retweets) tweet1 else tweet2
+
+    if (left.isInstanceOf[NonEmpty])
+      if (right.isInstanceOf[NonEmpty]) maxRetweets(elem, maxRetweets(left.mostRetweeted, right.mostRetweeted))
+      else maxRetweets(elem, left.mostRetweeted)
+    else if (right.isInstanceOf[NonEmpty]) maxRetweets(elem, right.mostRetweeted)
+    else elem
+  }
   /**
    * The following methods are already implemented
    */

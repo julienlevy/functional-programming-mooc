@@ -18,6 +18,7 @@ class TweetSetSuite extends FunSuite {
     val set4d = set3.incl(d)
     val set5 = set4c.incl(d)
     val set6 = set4c.incl(new Tweet("ab", "ab body", 10)).incl(new Tweet("cz", "cz body", 10)).incl(new Tweet("bc", "bc body", 10)).incl(new Tweet("aa", "aa body", 10)).incl(new Tweet("ac", "ac body", 10))
+    val set7 = set6.incl(new Tweet("abc", "isMyMax", 33))
   }
 
   def asSet(tweets: TweetSet): Set[Tweet] = {
@@ -69,6 +70,13 @@ class TweetSetSuite extends FunSuite {
   test("union: with empty set (2)") {
     new TestSets {
       assert(size(set1.union(set5)) === 4)
+    }
+  }
+
+  test("mostRetweet: with big set") {
+    new TestSets {
+      println(set7.mostRetweeted)
+      assert(set7.mostRetweeted.text== "isMyMax")
     }
   }
 
