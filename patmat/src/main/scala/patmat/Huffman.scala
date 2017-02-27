@@ -75,7 +75,18 @@ object Huffman {
    *       println("integer is  : "+ theInt)
    *   }
    */
-    def times(chars: List[Char]): List[(Char, Int)] = ???
+    def times(chars: List[Char]): List[(Char, Int)] = {
+      def concat(pair: (Char, Int), list: List[(Char, Int)]): List[(Char, Int)] = {
+        val ind = list.indexWhere(p => (p._1 == pair._1))
+        if (ind < 0) pair :: list
+        else list.take(ind) ::: (pair :: list.drop(ind + 1))
+      }
+
+      if (chars.length == 1) List((chars.head, 1))
+      else if (chars.length == 0) List()
+      else
+        concat((chars.head, 1), times(chars.tail))
+    }
   
   /**
    * Returns a list of `Leaf` nodes for a given frequency table `freqs`.
@@ -84,12 +95,19 @@ object Huffman {
    * head of the list should have the smallest weight), where the weight
    * of a leaf is the frequency of the character.
    */
-    def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = ???
+    def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = {
+      def dropFreq(ordrdList: List[(Char, Int)], agg: List[Leaf]): List[Leaf] = {
+        if (ordrdList.isEmpty) agg
+        else dropFreq(ordrdList.tail, Leaf(ordrdList.head._1, ordrdList.head._2) :: agg)
+      }
+
+      dropFreq(freqs.sortWith(_._2 > _._2), List())
+    }
   
   /**
    * Checks whether the list `trees` contains only one single code tree.
    */
-    def singleton(trees: List[CodeTree]): Boolean = ???
+    def singleton(trees: List[CodeTree]): Boolean = trees.length == 1
   
   /**
    * The parameter `trees` of this function is a list of code trees ordered
@@ -103,7 +121,18 @@ object Huffman {
    * If `trees` is a list of less than two elements, that list should be returned
    * unchanged.
    */
-    def combine(trees: List[CodeTree]): List[CodeTree] = ???
+    def combine(trees: List[CodeTree]): List[CodeTree] = {
+      def insertFork(fork: CodeTree, nTrees: List[CodeTree]): List[CodeTree] = {
+        val ind = nTrees.indexWhere(p => weight(p) > weight(fork))
+        if (ind < 0) nTrees :+ fork
+        else nTrees.take(ind) ::: fork :: nTrees.drop(ind)
+      }
+      trees match {
+        case List() => trees
+        case xs :: List() => trees
+        case left :: right :: rest => insertFork(new Fork(left, right, chars(left) ::: chars(right), weight(left) + weight(right)), trees.tail.tail)
+      }
+    }
   
   /**
    * This function will be called in the following way:
