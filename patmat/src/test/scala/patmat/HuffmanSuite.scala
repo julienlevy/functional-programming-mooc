@@ -66,5 +66,8 @@ class HuffmanSuite extends FunSuite {
       assert(decode(t1, encode(t1)("ab".toList)) === "ab".toList)
     }
   }
-
+  test("decode for simple") {
+    val ct = createCodeTree(string2Chars("abacca"))
+    assert(decode(ct,List(0,1,1,1,0)) == "abc".toList)
+  }
 }
