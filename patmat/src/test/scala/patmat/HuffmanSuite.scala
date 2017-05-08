@@ -38,15 +38,26 @@ class HuffmanSuite extends FunSuite {
     assert(string2Chars("hello, world") === List('h', 'e', 'l', 'l', 'o', ',', ' ', 'w', 'o', 'r', 'l', 'd'))
   }
 
-
+  test("times for abaacc char list") {
+    assert(times(string2Chars("abaacc")).toSet === Set(('b',1), ('c',2), ('a',3)))
+  }
   test("makeOrderedLeafList for some frequency table") {
     assert(makeOrderedLeafList(List(('t', 2), ('e', 1), ('x', 3))) === List(Leaf('e',1), Leaf('t',2), Leaf('x',3)))
   }
 
-
   test("combine of some leaf list") {
     val leaflist = List(Leaf('e', 1), Leaf('t', 2), Leaf('x', 4))
-    assert(combine(leaflist) === List(Fork(Leaf('e',1),Leaf('t',2),List('e', 't'),3), Leaf('x',4)))
+    assert(combine(leaflist) === List(Fork(Leaf('t',2), Leaf('e',1),List('t','e'),3), Leaf('x',4)))
+  }
+  test("combine of some leaf list with insert") {
+    val leaflist = List(Leaf('e', 2), Leaf('t', 3), Leaf('x', 4),Leaf('x', 6),Leaf('y', 7))
+    assert(combine(leaflist) === List(Leaf('x', 4), Fork(Leaf('t',3), Leaf('e',2),List('t','e'),5), Leaf('x',6), Leaf('y',7)))
+  }
+
+  test("codeTree for abacca") {
+    val ct = createCodeTree(string2Chars("abacca"))
+    print(ct)
+    assert(ct == Fork(Leaf('a',3), Fork(Leaf('c',2),Leaf('b',1),List('c', 'b'),3), List('a', 'c', 'b'),6))
   }
 
 

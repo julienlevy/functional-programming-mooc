@@ -76,16 +76,15 @@ object Huffman {
    *   }
    */
     def times(chars: List[Char]): List[(Char, Int)] = {
-      def concat(pair: (Char, Int), list: List[(Char, Int)]): List[(Char, Int)] = {
-        val ind = list.indexWhere(p => (p._1 == pair._1))
-        if (ind < 0) pair :: list
-        else list.take(ind) ::: (pair :: list.drop(ind + 1))
+      def concat(ch: Char, list: List[(Char, Int)]): List[(Char, Int)] = {
+        val ind = list.indexWhere(p => (p._1 == ch))
+        if (ind < 0) (ch, 1) :: list
+        else list.take(ind) ::: ((ch, list(ind)._2 + 1) :: list.drop(ind + 1))
       }
 
       if (chars.length == 1) List((chars.head, 1))
       else if (chars.length == 0) List()
-      else
-        concat((chars.head, 1), times(chars.tail))
+      else concat(chars.head, times(chars.tail))
     }
   
   /**
@@ -123,14 +122,14 @@ object Huffman {
    */
     def combine(trees: List[CodeTree]): List[CodeTree] = {
       def insertFork(fork: CodeTree, nTrees: List[CodeTree]): List[CodeTree] = {
-        val ind = nTrees.indexWhere(p => weight(p) > weight(fork))
+        val ind = nTrees.indexWhere(p => weight(p) >= weight(fork))
         if (ind < 0) nTrees :+ fork
         else nTrees.take(ind) ::: fork :: nTrees.drop(ind)
       }
       trees match {
         case List() => trees
         case xs :: List() => trees
-        case left :: right :: rest => insertFork(new Fork(left, right, chars(left) ::: chars(right), weight(left) + weight(right)), trees.tail.tail)
+        case small :: big :: rest => insertFork(new Fork(big, small, chars(big) ::: chars(small), weight(small) + weight(big)), trees.tail.tail)
       }
     }
   
@@ -151,7 +150,10 @@ object Huffman {
    *    the example invocation. Also define the return type of the `until` function.
    *  - try to find sensible parameter names for `xxx`, `yyy` and `zzz`.
    */
-    def until(xxx: ???, yyy: ???)(zzz: ???): ??? = ???
+    def until(criteria: List[CodeTree] => Boolean, f: List[CodeTree] => List[CodeTree])(trees: List[CodeTree]): List[CodeTree] = {
+      if (criteria(trees)) trees
+      else until(criteria, f)(f(trees))
+    }
   
   /**
    * This function creates a code tree which is optimal to encode the text `chars`.
@@ -159,7 +161,7 @@ object Huffman {
    * The parameter `chars` is an arbitrary text. This function extracts the character
    * frequencies from that text and creates a code tree based on them.
    */
-    def createCodeTree(chars: List[Char]): CodeTree = ???
+    def createCodeTree(chars: List[Char]): CodeTree = until(singleton, combine)(makeOrderedLeafList(times(chars))).head
   
 
   // Part 3: Decoding
