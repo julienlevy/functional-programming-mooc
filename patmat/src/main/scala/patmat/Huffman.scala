@@ -175,14 +175,13 @@ object Huffman {
     def decode(tree: CodeTree, bits: List[Bit]): List[Char] = {
       // will not work if the initial tree is a leaf...
       def decodeInside(subtree: CodeTree, bitsIn: List[Bit]): List[Char] = {
-        println(subtree)
-        println(bitsIn)
         subtree match {
           case Leaf(char, weight) => char :: decodeInside(tree, bitsIn)
           case Fork(left, right, chars, weight) => bitsIn match {
             case List() => List() //throw error
             case 0 :: rest => decodeInside(left, rest)
             case 1 :: rest => decodeInside(right, rest)
+            case default => List()
               // Add error if pattern is different from 0 or 1
           }
         }
@@ -206,11 +205,8 @@ object Huffman {
   /**
    * Write a function that returns the decoded secret
    */
-  def decodedSecret: List[Char] = {
-    val d = decode(frenchCode,secret)
-    print(d)
-    d
-  }
+  def decodedSecret: List[Char] = decode(frenchCode,secret)
+
   
 
   // Part 4a: Encoding using Huffman tree
@@ -219,7 +215,24 @@ object Huffman {
    * This function encodes `text` using the code tree `tree`
    * into a sequence of bits.
    */
-    def encode(tree: CodeTree)(text: List[Char]): List[Bit] = ???
+  def encode(tree: CodeTree)(text: List[Char]): List[Bit] = {
+    def encodeChar(subtree: CodeTree, ch: Char): List[Bit] = {
+      // TODO: throw error subtree.chars does not contain ch
+      subtree match {
+        case Leaf(char, weight) => List()
+        case Fork(left, right, charsList, weight) => {
+          if (chars(left).contains(ch)) {
+            0 :: encodeChar(left, ch)
+          } else 1 :: encodeChar(right, ch)
+        }
+      }
+    }
+    def encodeString(subtext: List[Char]): List[Bit] = subtext match {
+      case List() => List()
+      case a :: rest => encodeChar(tree, a) ::: encodeString(rest)
+    }
+    encodeString(text)
+  }
   
   // Part 4b: Encoding using code table
 
@@ -229,7 +242,13 @@ object Huffman {
    * This function returns the bit sequence that represents the character `char` in
    * the code table `table`.
    */
-    def codeBits(table: CodeTable)(char: Char): List[Bit] = ???
+    def codeBits(table: CodeTable)(char: Char): List[Bit] = table match {
+      case List() => List()
+      case (c, bits) :: rest => {
+        if (c == char) bits
+        else codeBits(rest)(char)
+      }
+    }
   
   /**
    * Given a code tree, create a code table which contains, for every character in the
@@ -239,14 +258,25 @@ object Huffman {
    * a valid code tree that can be represented as a code table. Using the code tables of the
    * sub-trees, think of how to build the code table for the entire tree.
    */
-    def convert(tree: CodeTree): CodeTable = ???
+    def convert(tree: CodeTree): CodeTable = {
+      tree match {
+        case Leaf(char, weight) => List((char, List()))
+        case Fork(left, right, charsList, weight) => mergeCodeTables(convert(left), convert(right))
+      }
+    }
   
   /**
    * This function takes two code tables and merges them into one. Depending on how you
    * use it in the `convert` method above, this merge method might also do some transformations
    * on the two parameter code tables.
    */
-    def mergeCodeTables(a: CodeTable, b: CodeTable): CodeTable = ???
+    def mergeCodeTables(a: CodeTable, b: CodeTable): CodeTable = {
+      def addBitSuffix(bit: Bit, table: CodeTable): CodeTable = table match {
+        case List() => List()
+        case first :: rest => (first._1, bit :: first._2) :: addBitSuffix(bit, rest)
+      }
+      addBitSuffix(0, a) ::: addBitSuffix(1, b)
+    }
   
   /**
    * This function encodes `text` according to the code tree `tree`.
@@ -254,5 +284,5 @@ object Huffman {
    * To speed up the encoding process, it first converts the code tree to a code table
    * and then uses it to perform the actual encoding.
    */
-    def quickEncode(tree: CodeTree)(text: List[Char]): List[Bit] = ???
+    def quickEncode(tree: CodeTree)(text: List[Char]): List[Bit] = text flatMap codeBits(convert(tree))
   }

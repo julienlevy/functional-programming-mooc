@@ -12,6 +12,7 @@ class HuffmanSuite extends FunSuite {
 	trait TestTrees {
 		val t1 = Fork(Leaf('a',2), Leaf('b',3), List('a','b'), 5)
 		val t2 = Fork(Fork(Leaf('a',2), Leaf('b',3), List('a','b'), 5), Leaf('d',4), List('a','b','d'), 9)
+    val ct = createCodeTree(string2Chars("abacca"))
 	}
 
 
@@ -55,11 +56,10 @@ class HuffmanSuite extends FunSuite {
   }
 
   test("codeTree for abacca") {
-    val ct = createCodeTree(string2Chars("abacca"))
-    print(ct)
-    assert(ct == Fork(Leaf('a',3), Fork(Leaf('c',2),Leaf('b',1),List('c', 'b'),3), List('a', 'c', 'b'),6))
+    new TestTrees {
+      assert(ct == Fork(Leaf('a',3), Fork(Leaf('c',2),Leaf('b',1),List('c', 'b'),3), List('a', 'c', 'b'),6))
+    }
   }
-
 
   test("decode and encode a very short text should be identity") {
     new TestTrees {
@@ -67,7 +67,13 @@ class HuffmanSuite extends FunSuite {
     }
   }
   test("decode for simple") {
-    val ct = createCodeTree(string2Chars("abacca"))
-    assert(decode(ct,List(0,1,1,1,0)) == "abc".toList)
+    new TestTrees {
+      assert(decode(ct,List(0,1,1,1,0)) == "abc".toList)
+    }
+  }
+  test("quickencode") {
+    new TestTrees {
+      assert(quickEncode(ct)("abc".toList) == List(0,1,1,1,0))
+    }
   }
 }
