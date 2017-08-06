@@ -45,6 +45,24 @@ class AnagramsSuite extends FunSuite  {
     val lad = List(('a', 1), ('d', 1), ('l', 1))
     assert(subtract(lard, r) === lad)
   }
+  test("subtract: larrd - rd") {
+    val lard = List(('a', 1), ('d', 1), ('l', 1), ('r', 2))
+    val rd = List(('r', 1), ('d', 1))
+    val lar = List(('a', 1), ('l', 1), ('r', 1))
+    assert(subtract(lard, rd) === lar)
+  }
+  test("subtract: larrddd - rrddd") {
+    val lard = List(('a', 1), ('d', 3), ('l', 1), ('r', 2))
+    val rrddd = List(('r', 2), ('d', 3))
+    val la = List(('a', 1), ('l', 1))
+    assert(subtract(lard, rrddd) === la)
+  }
+  test("subtract: larrdddssssss - rrdddssssss") {
+    val lard = List(('a', 1), ('d', 3), ('l', 1), ('r', 2), ('s', 6))
+    val rrddd = List(('r', 2), ('d', 3), ('s', 6))
+    val la = List(('a', 1), ('l', 1))
+    assert(subtract(lard, rrddd) === la)
+  }
 
 
   test("combinations: []") {
@@ -96,6 +114,26 @@ class AnagramsSuite extends FunSuite  {
       List("Zulu", "nil", "Rex"),
       List("rulez", "Linux"),
       List("Linux", "rulez")
+    )
+    assert(sentenceAnagrams(sentence).toSet === anas.toSet)
+  }
+  test("sentence anagrams: Yes Man") {
+    val sentence = List("Yes", "man")
+    val anas = List(
+      List("en", "as", "my"),
+      List("en", "my", "as"),
+      List("man", "yes"),
+      List("men", "say"),
+      List("as", "en", "my"),
+      List("as", "my", "en"),
+      List("sane", "my"),
+      List("Sean", "my"),
+      List("my", "en", "as"),
+      List("my", "as", "en"),
+      List("my", "sane"),
+      List("my", "Sean"),
+      List("say", "men"),
+      List("yes", "man")
     )
     assert(sentenceAnagrams(sentence).toSet === anas.toSet)
   }
